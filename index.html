@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDEI Tribe Wins Tracker</title>
+<title>TRIBE GP Tracker</title>
+<script>
+  // Apply theme before render to prevent flash
+  const t = localStorage.getItem('pdei-theme');
+  if (t) document.documentElement.dataset.theme = t;
+</script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 [data-theme="dark"]{
@@ -228,7 +233,10 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
   <!-- HEADER -->
   <div class="header">
     <div>
-      <h1>PDEI <span>Wins</span> Tracker</h1>
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <h1>TRIBE GP <span>Tracker</span></h1>
+        <span style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:.3px">Updated from Universe</span>
+      </div>
       <div class="header-meta">
         <span class="tag loading" id="conn-tag">● Connecting…</span>
         <span class="tag" id="sync-tag">—</span>
@@ -244,7 +252,7 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
   <!-- KPI STRIP -->
   <div class="kpi-strip" id="kpi-strip">
     <div class="kpi blue"><div class="kpi-icon">📁</div><div class="kpi-label">Total Revenue</div><div class="kpi-value">—</div><div class="kpi-sub">Loading…</div></div>
-    <div class="kpi green"><div class="kpi-icon">📈</div><div class="kpi-label">Actual GP</div><div class="kpi-value">—</div><div class="kpi-sub">Loading…</div></div>
+    <div class="kpi green"><div class="kpi-icon">📈</div><div class="kpi-label">Recorded GP</div><div class="kpi-value">—</div><div class="kpi-sub">Loading…</div></div>
     <div class="kpi amber"><div class="kpi-icon">🔮</div><div class="kpi-label">Forecasted GP</div><div class="kpi-value">—</div><div class="kpi-sub">Loading…</div></div>
     <div class="kpi cyan"><div class="kpi-icon">✅</div><div class="kpi-label">Collected</div><div class="kpi-value">—</div><div class="kpi-sub">Loading…</div></div>
     <div class="kpi red"><div class="kpi-icon">⏳</div><div class="kpi-label">Pending</div><div class="kpi-value">—</div><div class="kpi-sub">Loading…</div></div>
@@ -287,7 +295,7 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
             <th>Status</th>
             <th>Month</th>
             <th class="num">Amount (PHP)</th>
-            <th class="num">Actual GP</th>
+            <th class="num">Recorded GP</th>
             <th class="num" style="min-width:210px">Forecasted GP % → Value</th>
             <th>% Collected</th>
           </tr>
@@ -480,10 +488,12 @@ function renderKPIs() {
   const totalForecast = fd.reduce((s,d) => s + d.amount * d.forecastPct / 100, 0);
   const collected = fd.filter(d => d.status === 'Collected - For Closing').length;
   const margin = totalRev > 0 ? (totalGP/totalRev*100).toFixed(1) : 0;
-  document.getElementById('kpi-strip').innerHTML = `
+    const forecastMargin = totalRev > 0 ? parseFloat((totalForecast/totalRev*100).toFixed(1)) : 0;
+    const forecastMarginColor = forecastMargin > parseFloat(margin) ? 'var(--green)' : 'var(--text-dim)';
+    document.getElementById('kpi-strip').innerHTML = `
     <div class="kpi blue"><div class="kpi-icon">📁</div><div class="kpi-label">Total Revenue</div><div class="kpi-value">${fmtM(totalRev)}</div><div class="kpi-sub">${fd.length} projects</div></div>
-    <div class="kpi green"><div class="kpi-icon">📈</div><div class="kpi-label">Actual GP</div><div class="kpi-value">${fmtM(totalGP)}</div><div class="kpi-sub">${margin}% margin</div></div>
-    <div class="kpi amber"><div class="kpi-icon">🔮</div><div class="kpi-label">Forecasted GP</div><div class="kpi-value">${fmtM(totalForecast)}</div><div class="kpi-sub">Tribe updates</div></div>
+    <div class="kpi green"><div class="kpi-icon">📈</div><div class="kpi-label">Recorded GP</div><div class="kpi-value">${fmtM(totalGP)}</div><div class="kpi-sub">${margin}% margin</div></div>
+    <div class="kpi amber"><div class="kpi-icon">🔮</div><div class="kpi-label">Forecasted GP</div><div class="kpi-value">${fmtM(totalForecast)}</div><div class="kpi-sub" style="color:${forecastMarginColor};font-weight:${forecastMargin > parseFloat(margin) ? '700' : '400'}">${forecastMargin}% forecast margin</div></div>
     <div class="kpi cyan"><div class="kpi-icon">✅</div><div class="kpi-label">Collected</div><div class="kpi-value">${collected}</div><div class="kpi-sub">of ${fd.length} closed</div></div>
     <div class="kpi red"><div class="kpi-icon">⏳</div><div class="kpi-label">Pending</div><div class="kpi-value">${fd.filter(d=>d.status.startsWith('For Collection')).length}</div><div class="kpi-sub">to collect</div></div>
   `;
@@ -505,7 +515,7 @@ function renderTribeStrip() {
       <div class="tribe-card ${key}">
         <div class="tribe-card-name ${key}">${tribe.replace('PDEI - ','')}</div>
         <div class="tribe-card-row"><span class="tribe-card-lbl">Revenue</span><span class="tribe-card-val">${fmtM(rev)}</span></div>
-        <div class="tribe-card-row"><span class="tribe-card-lbl">Actual GP</span><span class="tribe-card-val">${fmtM(actualGP)}</span></div>
+        <div class="tribe-card-row"><span class="tribe-card-lbl">Recorded GP</span><span class="tribe-card-val">${fmtM(actualGP)}</span></div>
         <div class="tribe-card-row"><span class="tribe-card-lbl">Projects</span><span class="tribe-card-val">${td.length}</span></div>
         <div class="tribe-gp-row">
           <div class="tribe-gp-lbl">Forecasted GP Total</div>
@@ -604,12 +614,14 @@ function setFilter(f, btn) {
   render();
 }
 function toggleTheme() {
-  document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('pdei-theme', next);
 }
 
 // ─── EXPORT ───────────────────────────────────────────────────────────────────
 function exportCSV() {
-  const headers = ['Client','Project','Status','Project Code','Amount (PHP)','Actual GP','GP %','Forecasted GP %','Forecasted GP (PHP)','Tribe','Year','Month','% Collected'];
+  const headers = ['Client','Project','Status','Project Code','Amount (PHP)','Recorded GP','GP %','Forecasted GP %','Forecasted GP (PHP)','Tribe','Year','Month','% Collected'];
   const rows = data.map(d => [
     d.client, d.project, d.status, d.projectCode,
     d.amount.toFixed(2), d.gp.toFixed(2),
@@ -704,7 +716,7 @@ function parseCSV(text) {
 }
 
 function csvRowToSupabase(row) {
-  const gpRaw = parseFloat((row['GP'] || row['Actual GP'] || '0').replace(/,/g,'')) || 0;
+  const gpRaw = parseFloat((row['GP'] || row['Recorded GP'] || '0').replace(/,/g,'')) || 0;
   const amt = parseFloat((row['Amount (VAT-Ex.) (PHP)'] || row['Amount (PHP)'] || '0').replace(/,/g,'')) || 0;
   const pct = parseFloat(row['% Collected']) || 0;
   const gpPct = amt > 0 ? parseFloat((gpRaw/amt*100).toFixed(2)) : 0;
@@ -821,6 +833,10 @@ function toast(msg, type='info') {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
+// Restore saved theme
+const savedTheme = localStorage.getItem('pdei-theme');
+if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+
 loadData();
 </script>
 </body>
