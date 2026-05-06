@@ -144,7 +144,7 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
 .sc-signed{background:var(--purple-dim);color:var(--purple)}.sc-signed::before{background:var(--purple)}
 .sc-awaiting{background:var(--red-dim);color:var(--red)}.sc-awaiting::before{background:var(--red);animation:pulse 1.5s infinite}
 
-.proj-name{font-size:13px;font-weight:600;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj-name{font-size:13px;font-weight:600;max-width:280px;white-space:normal;word-break:break-word}
 .proj-client{font-size:11px;color:var(--text-muted);margin-top:2px}
 .proj-code{font-size:10px;font-family:'DM Mono',monospace;color:var(--text-muted);margin-top:1px}
 
@@ -155,7 +155,7 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
 .coll-pct{font-size:10px;font-family:'DM Mono',monospace;color:var(--text-muted);min-width:28px}
 
 /* GP INPUT */
-.gp-cell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.gp-cell{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 .gp-input-wrap{display:flex;align-items:center;background:var(--surface2);border:1px dashed var(--amber);border-radius:var(--radius-sm);padding:4px 8px;gap:4px;transition:all .2s;min-width:90px}
 .gp-input-wrap:focus-within{border-color:var(--amber);border-style:solid;background:var(--amber-dim)}
 .gp-pct-input{background:transparent;border:none;outline:none;font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber);width:46px;text-align:right}
@@ -372,6 +372,7 @@ let data = [];
 let activeFilter = 'all';
 let pendingSave = null;
 let csvFile = null;
+const collapsedMonths = new Set();
 
 // ─── SUPABASE HELPERS ─────────────────────────────────────────────────────────
 async function supaFetch(path, options = {}) {
@@ -395,7 +396,7 @@ async function supaFetch(path, options = {}) {
 async function loadData() {
   setTag('loading', '● Connecting…');
   try {
-    const rows = await supaFetch('/rest/v1/tribe_wins?select=*&order=month.asc,project_code.asc');
+    const rows = await supaFetch('/rest/v1/tribe_wins?select=*&order=month.desc,project_code.asc');
     data = rows.map(mapRow);
     setTag('live', '● Live');
     document.getElementById('sync-tag').textContent = 'Updated ' + new Date().toLocaleTimeString();
@@ -535,19 +536,32 @@ function renderTable() {
     tbody.innerHTML = `<tr><td colspan="8"><div class="state-block"><div class="icon">🔍</div><h3>No results</h3><p>Try adjusting your filters</p></div></td></tr>`;
     return;
   }
-  const months = ['01-01','02-01','03-01','04-01','05-01'];
+  const months = ['05-01','04-01','03-01','02-01','01-01'];
   months.forEach(mo => {
     const rows = fd.filter(d => d.month === mo);
     if (!rows.length) return;
+    const isCollapsed = collapsedMonths.has(mo);
     const mTr = document.createElement('tr');
     mTr.className = 'month-group-header';
-    mTr.innerHTML = `<td colspan="8">${MONTH_LABELS[mo] || mo} — ${rows.length} project${rows.length>1?'s':''}</td>`;
+    mTr.dataset.month = mo;
+    mTr.style.cursor = 'pointer';
+    mTr.style.userSelect = 'none';
+    mTr.innerHTML = `<td colspan="8"><span class="month-chevron" style="display:inline-block;margin-right:8px;transition:transform .2s;transform:rotate(${isCollapsed?'-90deg':'0deg'})">▾</span>${MONTH_LABELS[mo] || mo} — ${rows.length} project${rows.length>1?'s':''}</td>`;
+    mTr.addEventListener('click', () => {
+      const collapsed = collapsedMonths.has(mo);
+      collapsed ? collapsedMonths.delete(mo) : collapsedMonths.add(mo);
+      document.querySelectorAll(`tr[data-month-group="${mo}"]`).forEach(r => r.style.display = collapsed ? '' : 'none');
+      const chevron = mTr.querySelector('.month-chevron');
+      if (chevron) chevron.style.transform = collapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+    });
     tbody.appendChild(mTr);
     rows.forEach((row, i) => {
       const key = TRIBE_KEY(row.tribe);
       const pct = Math.round((row.pctCollected || 0) * 100);
       const forecastVal = row.amount * row.forecastPct / 100;
       const tr = document.createElement('tr');
+      tr.dataset.monthGroup = mo;
+      if (isCollapsed) tr.style.display = 'none';
       tr.style.animationDelay = (i * 0.03) + 's';
       tr.innerHTML = `
         <td>
@@ -559,7 +573,7 @@ function renderTable() {
         <td>${statusChip(row.status)}</td>
         <td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-muted)">${MONTH_LABELS[row.month]||row.month}</td>
         <td class="num" style="color:var(--gold);font-weight:600">${fmtM(row.amount)}</td>
-        <td class="num" style="color:var(--text-dim)">${fmtM(row.gp)}</td>
+        <td class="num" style="color:var(--text-dim)">${row.amount>0?(row.gp/row.amount*100).toFixed(1):0}%<div style="font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:2px">${fmtM(row.gp)}</div></td>
         <td class="num">
           <div class="gp-cell" data-code="${row.projectCode}">
             <div class="gp-input-wrap">
