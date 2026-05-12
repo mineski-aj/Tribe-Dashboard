@@ -86,11 +86,13 @@ input{font-family:'DM Sans',sans-serif}
 .tribe-card.marketing::before{background:var(--accent)}
 .tribe-card.esports::before{background:var(--green)}
 .tribe-card.moonton::before{background:var(--purple)}
+.tribe-card.ip::before{background:#F97316}
 .tribe-card-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
 .tribe-card-name.tencent{color:#EF4444}
 .tribe-card-name.marketing{color:var(--accent)}
 .tribe-card-name.esports{color:var(--green)}
 .tribe-card-name.moonton{color:var(--purple)}
+.tribe-card-name.ip{color:#F97316}
 .tribe-card-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
 .tribe-card-lbl{font-size:11px;color:var(--text-muted)}
 .tribe-card-val{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
@@ -109,6 +111,16 @@ input{font-family:'DM Sans',sans-serif}
 .search-wrap::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none}
 .search-input{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:20px;padding:7px 16px 7px 34px;font-size:13px;outline:none;transition:border-color .2s;width:220px}
 .search-input:focus{border-color:var(--accent)}
+
+/* SUB-FILTERS */
+.sub-filters-row{display:none;align-items:center;gap:8px;margin-top:-10px;margin-bottom:20px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.sub-filters-row.show{display:flex}
+.sub-filter-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-right:4px}
+.sub-filter-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.sub-filter-btn:hover{border-color:var(--accent);color:var(--text)}
+.sub-filter-btn.active{background:var(--surface2);border-color:var(--text-dim);color:var(--text)}
+.sub-filter-btn.wins.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.sub-filter-btn.pipeline.active{background:var(--amber-dim);border-color:var(--amber);color:var(--amber)}
 
 /* SECTION HEADER */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
@@ -136,6 +148,8 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
 .chip-marketing{background:var(--accent-glow);color:var(--accent)}
 .chip-esports{background:var(--green-dim);color:var(--green)}
 .chip-moonton{background:var(--purple-dim);color:var(--purple)}
+.chip-ip{background:rgba(249,115,22,.12);color:#F97316}
+.chip-none{background:var(--surface3);color:var(--text-muted)}
 .status-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .status-chip::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .sc-collected{background:var(--green-dim);color:var(--green)}.sc-collected::before{background:var(--green)}
@@ -143,6 +157,10 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
 .sc-invoicing{background:var(--amber-dim);color:var(--amber)}.sc-invoicing::before{background:var(--amber)}
 .sc-signed{background:var(--purple-dim);color:var(--purple)}.sc-signed::before{background:var(--purple)}
 .sc-awaiting{background:var(--red-dim);color:var(--red)}.sc-awaiting::before{background:var(--red);animation:pulse 1.5s infinite}
+.sc-submitted{background:var(--amber-dim);color:var(--amber)}.sc-submitted::before{background:var(--amber)}
+.sc-creating{background:var(--surface3);color:var(--text-muted)}.sc-creating::before{background:var(--text-muted)}
+.sc-talks{background:var(--accent-glow);color:var(--accent)}.sc-talks::before{background:var(--accent)}
+.sc-talent{background:var(--cyan-dim);color:var(--cyan)}.sc-talent::before{background:var(--cyan)}
 
 .proj-name{font-size:13px;font-weight:600;max-width:280px;white-space:normal;word-break:break-word}
 .proj-client{font-size:11px;color:var(--text-muted);margin-top:2px}
@@ -267,19 +285,22 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
     <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
     <button class="filter-btn" onclick="setFilter('PDEI - Tencent',this)">Tencent</button>
     <button class="filter-btn" onclick="setFilter('PDEI - Marketing',this)">Marketing</button>
-    <button class="filter-btn" onclick="setFilter('PDEI - Esports',this)">Esports</button>
+    <button class="filter-btn" onclick="setFilter('ESPORTS_IP',this)">Esports + IP</button>
     <button class="filter-btn" onclick="setFilter('PDEI - Moonton',this)">Moonton</button>
-    <button class="filter-btn" onclick="setFilter('status:collected',this)">Collected</button>
-    <button class="filter-btn" onclick="setFilter('status:pending',this)">Pending</button>
-    <button class="filter-btn" onclick="setFilter('status:awaiting',this)">Awaiting Sig.</button>
     <div class="search-wrap">
-      <input class="search-input" type="text" id="search" placeholder="Search project, client…" oninput="renderTable()">
+      <input class="search-input" type="text" id="search" placeholder="Search project, client, tags…" oninput="renderTable()">
     </div>
+  </div>
+  <div class="sub-filters-row show" id="sub-filters-row">
+    <span class="sub-filter-label">View:</span>
+    <button class="sub-filter-btn active" onclick="setSubFilter(null,this)">All</button>
+    <button class="sub-filter-btn wins" onclick="setSubFilter('wins',this)">Wins</button>
+    <button class="sub-filter-btn pipeline" onclick="setSubFilter('pipeline',this)">Pipeline</button>
   </div>
 
   <!-- TABLE -->
   <div class="section-header">
-    <h2>Won Projects <span class="count-badge" id="proj-count">0</span></h2>
+    <h2>Pipeline Projects <span class="count-badge" id="proj-count">0</span></h2>
     <div style="display:flex;gap:10px;align-items:center">
       <span class="edit-hint">✏ Click % to update forecast — saves instantly</span>
     </div>
@@ -334,7 +355,7 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
     <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:border-color .2s" id="drop-zone" onclick="document.getElementById('csv-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleDrop(event)">
       <div style="font-size:28px;margin-bottom:8px">📂</div>
       <div style="font-size:13px;color:var(--text-dim)" id="drop-label">Click to browse or drag & drop your CSV here</div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">AM_BD_Universe__Universe_Wins.csv</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">AM BD Universe_🌌Universe_Pipeline.csv</div>
     </div>
     <input type="file" id="csv-file" accept=".csv" onchange="handleFileSelect(event)">
     <div class="import-log" id="import-log"></div>
@@ -364,15 +385,27 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const IMPORT_PASSWORD = 'Mineski2019$@#';
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TRIBES = ['PDEI - Tencent','PDEI - Marketing','PDEI - Esports','PDEI - Moonton'];
-const TRIBE_KEY = t => t.replace('PDEI - ','').toLowerCase();
-const MONTH_LABELS = {'01-01':'Jan 2026','02-01':'Feb 2026','03-01':'Mar 2026','04-01':'Apr 2026','05-01':'May 2026'};
+const TRIBE_KEY = t => t === 'IP' ? 'ip' : t.replace('PDEI - ','').toLowerCase();
+const MONTH_LABELS = {
+  '01-01':'Jan 2026','02-01':'Feb 2026','03-01':'Mar 2026','04-01':'Apr 2026',
+  '05-01':'May 2026','06-01':'Jun 2026','07-01':'Jul 2026','08-01':'Aug 2026',
+  '09-01':'Sep 2026','10-01':'Oct 2026','11-01':'Nov 2026','12-01':'Dec 2026'
+};
 
 let data = [];
 let activeFilter = 'all';
+let activeSubFilter = null;
 let pendingSave = null;
 let csvFile = null;
 const collapsedMonths = new Set();
+
+const WIN_STATUSES = new Set([
+  'Collected - For Closing',
+  'For Collection - Invoice Sent',
+  'For Collection - For Invoicing',
+  'Signed CE',
+  'Won - Awaiting CE Signature'
+]);
 
 // ─── SUPABASE HELPERS ─────────────────────────────────────────────────────────
 async function supaFetch(path, options = {}) {
@@ -387,10 +420,14 @@ async function supaFetch(path, options = {}) {
     }
   });
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err);
+    const errText = await res.text();
+    let msg = errText;
+    try { const j = JSON.parse(errText); msg = j.message || j.hint || j.details || errText; } catch(_) {}
+    throw new Error(`HTTP ${res.status}: ${msg}`);
   }
-  return res.status === 204 ? null : res.json();
+  if (res.status === 204 || res.status === 201) return null;
+  const body = await res.text();
+  return body ? JSON.parse(body) : null;
 }
 
 async function loadData() {
@@ -444,6 +481,11 @@ function scheduleSave(projectCode, forecastPct) {
         setTimeout(() => { if(cell) cell.className = 'gp-cell'; }, 1500);
       }
       document.getElementById('sync-tag').textContent = 'Saved ' + new Date().toLocaleTimeString();
+      // Hide save bar once all pending saves are done
+      if (Object.keys(saveTimers).every(k => !saveTimers[k])) {
+        document.getElementById('save-bar').classList.remove('show');
+      }
+      setTimeout(() => document.getElementById('save-bar').classList.remove('show'), 1500);
     } catch(e) {
       if (cell) cell.className = 'gp-cell gp-modified';
       toast('Save failed — check connection', 'warning');
@@ -455,14 +497,17 @@ function scheduleSave(projectCode, forecastPct) {
 function getFiltered() {
   const q = document.getElementById('search').value.toLowerCase();
   return data.filter(d => {
+    if (d.year && d.year !== '2026') return false;
     const mf =
       activeFilter === 'all' ? true :
-      activeFilter === 'status:collected' ? d.status === 'Collected - For Closing' :
-      activeFilter === 'status:pending' ? d.status.startsWith('For Collection') :
-      activeFilter === 'status:awaiting' ? d.status === 'Won - Awaiting CE Signature' :
+      activeFilter === 'ESPORTS_IP' ? (d.tribe === 'PDEI - Esports' || d.tribe === 'IP') :
       d.tribe === activeFilter;
-    const ms = !q || d.project.toLowerCase().includes(q) || d.client.toLowerCase().includes(q) || d.projectCode.toLowerCase().includes(q);
-    return mf && ms;
+    const sf =
+      activeSubFilter === 'wins'     ? WIN_STATUSES.has(d.status) :
+      activeSubFilter === 'pipeline' ? !WIN_STATUSES.has(d.status) :
+      true;
+    const ms = !q || d.project.toLowerCase().includes(q) || d.client.toLowerCase().includes(q) || (d.projectCode||'').toLowerCase().includes(q);
+    return mf && sf && ms;
   });
 }
 
@@ -479,7 +524,11 @@ function statusChip(s) {
   if (s === 'For Collection - For Invoicing') return `<span class="status-chip sc-invoicing">For Invoicing</span>`;
   if (s === 'Signed CE') return `<span class="status-chip sc-signed">Signed CE</span>`;
   if (s === 'Won - Awaiting CE Signature') return `<span class="status-chip sc-awaiting">Awaiting Sig.</span>`;
-  return `<span class="status-chip">${s}</span>`;
+  if (s === 'CE/Pitch Submitted') return `<span class="status-chip sc-submitted">CE Submitted</span>`;
+  if (s === 'For CE/Pitch Creation') return `<span class="status-chip sc-creating">Creating Pitch</span>`;
+  if (s === 'Talks In Progress') return `<span class="status-chip sc-talks">In Talks</span>`;
+  if (s === 'Talent Sourcing') return `<span class="status-chip sc-talent">Talent Sourcing</span>`;
+  return `<span class="status-chip">${s||'—'}</span>`;
 }
 
 function renderKPIs() {
@@ -487,44 +536,52 @@ function renderKPIs() {
   const totalRev = fd.reduce((s,d) => s+d.amount, 0);
   const totalGP = fd.reduce((s,d) => s+d.gp, 0);
   const totalForecast = fd.reduce((s,d) => s + d.amount * d.forecastPct / 100, 0);
-  const collected = fd.filter(d => d.status === 'Collected - For Closing').length;
   const margin = totalRev > 0 ? (totalGP/totalRev*100).toFixed(1) : 0;
-    const forecastMargin = totalRev > 0 ? parseFloat((totalForecast/totalRev*100).toFixed(1)) : 0;
-    const forecastMarginColor = forecastMargin > parseFloat(margin) ? 'var(--green)' : 'var(--text-dim)';
-    document.getElementById('kpi-strip').innerHTML = `
-    <div class="kpi blue"><div class="kpi-icon">📁</div><div class="kpi-label">Total Revenue</div><div class="kpi-value">${fmtM(totalRev)}</div><div class="kpi-sub">${fd.length} projects</div></div>
+  const forecastMargin = totalRev > 0 ? parseFloat((totalForecast/totalRev*100).toFixed(1)) : 0;
+  const forecastMarginColor = forecastMargin > parseFloat(margin) ? 'var(--green)' : 'var(--text-dim)';
+  const signedWon = fd.filter(d => d.status === 'Signed CE' || d.status === 'Won - Awaiting CE Signature' || d.status === 'Collected - For Closing' || d.status.startsWith('For Collection'));
+  const signedWonVal = signedWon.reduce((s,d) => s+d.amount, 0);
+  const activePitches = fd.filter(d => d.status === 'CE/Pitch Submitted' || d.status === 'For CE/Pitch Creation').length;
+  document.getElementById('kpi-strip').innerHTML = `
+    <div class="kpi blue"><div class="kpi-icon">📁</div><div class="kpi-label">Total Pipeline</div><div class="kpi-value">${fmtM(totalRev)}</div><div class="kpi-sub">${fd.length} projects</div></div>
     <div class="kpi green"><div class="kpi-icon">📈</div><div class="kpi-label">Recorded GP</div><div class="kpi-value">${fmtM(totalGP)}</div><div class="kpi-sub">${margin}% margin</div></div>
     <div class="kpi amber"><div class="kpi-icon">🔮</div><div class="kpi-label">Forecasted GP</div><div class="kpi-value">${fmtM(totalForecast)}</div><div class="kpi-sub" style="color:${forecastMarginColor};font-weight:${forecastMargin > parseFloat(margin) ? '700' : '400'}">${forecastMargin}% forecast margin</div></div>
-    <div class="kpi cyan"><div class="kpi-icon">✅</div><div class="kpi-label">Collected</div><div class="kpi-value">${collected}</div><div class="kpi-sub">of ${fd.length} closed</div></div>
-    <div class="kpi red"><div class="kpi-icon">⏳</div><div class="kpi-label">Pending</div><div class="kpi-value">${fd.filter(d=>d.status.startsWith('For Collection')).length}</div><div class="kpi-sub">to collect</div></div>
+    <div class="kpi cyan"><div class="kpi-icon">✅</div><div class="kpi-label">Signed / Won</div><div class="kpi-value">${signedWon.length}</div><div class="kpi-sub">${fmtM(signedWonVal)} value</div></div>
+    <div class="kpi red"><div class="kpi-icon">📝</div><div class="kpi-label">Active Pitches</div><div class="kpi-value">${activePitches}</div><div class="kpi-sub">CE submitted / in creation</div></div>
   `;
+}
+
+function tribeCard(label, cssKey, rows) {
+  if (!rows.length) return '';
+  const rev = rows.reduce((s,d) => s+d.amount, 0);
+  const actualGP = rows.reduce((s,d) => s+d.gp, 0);
+  const forecastGP = rows.reduce((s,d) => s + d.amount * d.forecastPct / 100, 0);
+  const delta = forecastGP - actualGP;
+  const dc = delta > 500 ? 'delta-up' : delta < -500 ? 'delta-down' : 'delta-flat';
+  const ds = delta >= 0 ? '+' : '';
+  return `
+    <div class="tribe-card ${cssKey}">
+      <div class="tribe-card-name ${cssKey}">${label}</div>
+      <div class="tribe-card-row"><span class="tribe-card-lbl">Revenue</span><span class="tribe-card-val">${fmtM(rev)}</span></div>
+      <div class="tribe-card-row"><span class="tribe-card-lbl">Recorded GP</span><span class="tribe-card-val">${fmtM(actualGP)}</span></div>
+      <div class="tribe-card-row"><span class="tribe-card-lbl">Projects</span><span class="tribe-card-val">${rows.length}</span></div>
+      <div class="tribe-gp-row">
+        <div class="tribe-gp-lbl">Forecasted GP Total</div>
+        <div class="tribe-gp-total">${fmtFull(forecastGP)}</div>
+        <div class="tribe-gp-delta ${dc}">${delta !== 0 ? ds + fmtM(Math.abs(delta)) + ' vs actual' : 'No changes yet'}</div>
+      </div>
+    </div>`;
 }
 
 function renderTribeStrip() {
   const fd = getFiltered();
-  document.getElementById('tribe-strip').innerHTML = TRIBES.map(tribe => {
-    const td = fd.filter(d => d.tribe === tribe);
-    if (!td.length) return '';
-    const key = TRIBE_KEY(tribe);
-    const rev = td.reduce((s,d) => s+d.amount, 0);
-    const actualGP = td.reduce((s,d) => s+d.gp, 0);
-    const forecastGP = td.reduce((s,d) => s + d.amount * d.forecastPct / 100, 0);
-    const delta = forecastGP - actualGP;
-    const dc = delta > 500 ? 'delta-up' : delta < -500 ? 'delta-down' : 'delta-flat';
-    const ds = delta >= 0 ? '+' : '';
-    return `
-      <div class="tribe-card ${key}">
-        <div class="tribe-card-name ${key}">${tribe.replace('PDEI - ','')}</div>
-        <div class="tribe-card-row"><span class="tribe-card-lbl">Revenue</span><span class="tribe-card-val">${fmtM(rev)}</span></div>
-        <div class="tribe-card-row"><span class="tribe-card-lbl">Recorded GP</span><span class="tribe-card-val">${fmtM(actualGP)}</span></div>
-        <div class="tribe-card-row"><span class="tribe-card-lbl">Projects</span><span class="tribe-card-val">${td.length}</span></div>
-        <div class="tribe-gp-row">
-          <div class="tribe-gp-lbl">Forecasted GP Total</div>
-          <div class="tribe-gp-total">${fmtFull(forecastGP)}</div>
-          <div class="tribe-gp-delta ${dc}">${delta !== 0 ? ds + fmtM(Math.abs(delta)) + ' vs actual' : 'No changes yet'}</div>
-        </div>
-      </div>`;
-  }).join('');
+  const esportsIP = fd.filter(d => d.tribe === 'PDEI - Esports' || d.tribe === 'IP');
+  document.getElementById('tribe-strip').innerHTML = [
+    tribeCard('Tencent',   'tencent',   fd.filter(d => d.tribe === 'PDEI - Tencent')),
+    tribeCard('Marketing', 'marketing', fd.filter(d => d.tribe === 'PDEI - Marketing')),
+    tribeCard('Esports + IP', 'esports', esportsIP),
+    tribeCard('Moonton',   'moonton',   fd.filter(d => d.tribe === 'PDEI - Moonton')),
+  ].join('');
 }
 
 function renderTable() {
@@ -536,17 +593,18 @@ function renderTable() {
     tbody.innerHTML = `<tr><td colspan="8"><div class="state-block"><div class="icon">🔍</div><h3>No results</h3><p>Try adjusting your filters</p></div></td></tr>`;
     return;
   }
-  const months = ['05-01','04-01','03-01','02-01','01-01'];
+  const months = ['12-01','11-01','10-01','09-01','08-01','07-01','06-01','05-01','04-01','03-01','02-01','01-01',''];
   months.forEach(mo => {
-    const rows = fd.filter(d => d.month === mo);
+    const rows = fd.filter(d => (d.month || '') === mo);
     if (!rows.length) return;
     const isCollapsed = collapsedMonths.has(mo);
     const mTr = document.createElement('tr');
     mTr.className = 'month-group-header';
-    mTr.dataset.month = mo;
+    mTr.dataset.month = mo || '_nomonth';
     mTr.style.cursor = 'pointer';
     mTr.style.userSelect = 'none';
-    mTr.innerHTML = `<td colspan="8"><span class="month-chevron" style="display:inline-block;margin-right:8px;transition:transform .2s;transform:rotate(${isCollapsed?'-90deg':'0deg'})">▾</span>${MONTH_LABELS[mo] || mo} — ${rows.length} project${rows.length>1?'s':''}</td>`;
+    const moLabel = mo === '' ? 'No Month Set' : (MONTH_LABELS[mo] || mo);
+    mTr.innerHTML = `<td colspan="8"><span class="month-chevron" style="display:inline-block;margin-right:8px;transition:transform .2s;transform:rotate(${isCollapsed?'-90deg':'0deg'})">▾</span>${moLabel} — ${rows.length} project${rows.length>1?'s':''}</td>`;
     mTr.addEventListener('click', () => {
       const collapsed = collapsedMonths.has(mo);
       collapsed ? collapsedMonths.delete(mo) : collapsedMonths.add(mo);
@@ -565,11 +623,11 @@ function renderTable() {
       tr.style.animationDelay = (i * 0.03) + 's';
       tr.innerHTML = `
         <td>
-          <div class="proj-name" title="${row.project}">${row.project}</div>
+          <div class="proj-name" title="${row.project}">${row.project || row.client}</div>
           <div class="proj-client">${row.client}</div>
-          <div class="proj-code">${row.projectCode}</div>
+          ${row.projectCode && !row.projectCode.startsWith('GEN-') ? `<div class="proj-code">${row.projectCode}</div>` : ''}
         </td>
-        <td><span class="tribe-chip chip-${key}">${row.tribe.replace('PDEI - ','')}</span></td>
+        <td><span class="tribe-chip chip-${key || 'none'}">${(row.tribe || '—').replace('PDEI - ','')}</span></td>
         <td>${statusChip(row.status)}</td>
         <td style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-muted)">${MONTH_LABELS[row.month]||row.month}</td>
         <td class="num" style="color:var(--gold);font-weight:600">${fmtM(row.amount)}</td>
@@ -624,6 +682,13 @@ function render() { renderKPIs(); renderTribeStrip(); renderTable(); }
 function setFilter(f, btn) {
   activeFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function setSubFilter(f, btn) {
+  activeSubFilter = f;
+  document.querySelectorAll('.sub-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   render();
 }
@@ -716,38 +781,80 @@ function loadCSVFile(file) {
 
 // ─── IMPORT ───────────────────────────────────────────────────────────────────
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const vals = lines[i].split(',').map(v => v.replace(/"/g,'').trim());
-    if (vals.length < 3) continue;
-    const row = {};
-    headers.forEach((h,j) => row[h] = vals[j] || '');
-    rows.push(row);
+  // RFC-4180 compliant parser — handles quoted fields, commas and newlines inside quotes
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // strip BOM
+  const records = [];
+  let cur = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"' && text[i+1] === '"') { field += '"'; i++; }
+      else if (c === '"') { inQ = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') { inQ = true; }
+      else if (c === ',') { cur.push(field); field = ''; }
+      else if (c === '\r' && text[i+1] === '\n') { cur.push(field); field = ''; records.push(cur); cur = []; i++; }
+      else if (c === '\n' || c === '\r') { cur.push(field); field = ''; records.push(cur); cur = []; }
+      else { field += c; }
+    }
   }
-  return rows;
+  if (field !== '' || cur.length > 0) { cur.push(field); records.push(cur); }
+
+  if (!records.length) return [];
+  const headers = records[0].map(h => h.trim());
+  return records.slice(1)
+    .filter(r => r.some(v => v.trim()))
+    .map(r => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = (r[i] || '').trim(); });
+      return obj;
+    });
+}
+
+function syntheticCode(row) {
+  // Deterministic key for rows that have no project code yet.
+  // Based on tribe + client + project so re-importing the same row gives the same key.
+  const client = row['Client'] || row['﻿Client'] || '';
+  const str = [row['Tribe'] || '', client, row['Project'] || ''].join('|').toLowerCase();
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = Math.imul(h, 33) ^ str.charCodeAt(i);
+  return 'GEN-' + (h >>> 0).toString(36);
 }
 
 function csvRowToSupabase(row) {
-  const gpRaw = parseFloat((row['GP'] || row['Recorded GP'] || '0').replace(/,/g,'')) || 0;
-  const amt = parseFloat((row['Amount (VAT-Ex.) (PHP)'] || row['Amount (PHP)'] || '0').replace(/,/g,'')) || 0;
-  const pct = parseFloat(row['% Collected']) || 0;
-  const gpPct = amt > 0 ? parseFloat((gpRaw/amt*100).toFixed(2)) : 0;
+  // CSV may have a BOM on the first header field — normalise client key
+  const client = row['Client'] || row['﻿Client'] || row[Object.keys(row).find(k => k.includes('Client')) || ''] || '';
+  // GP% is a decimal (e.g. 0.218 = 21.8%), GP is the absolute value
+  const gpPctField = parseFloat((row['GP%'] || '0').replace(/[,%\s]/g,'')) || 0;
+  const gpRaw = parseFloat((row['GP'] || row['Recorded GP'] || '0').replace(/[,\s]/g,'')) || 0;
+  const amt = parseFloat((row['Amount (VAT-Ex.) (PHP)'] || row['Amount (PHP)'] || '0').replace(/[,\s]/g,'')) || 0;
+  const pct = parseFloat((row['% Collected'] || '0').replace(/[%,\s]/g,'')) || 0;
+  // Convert decimal GP% → percentage. Fall back to GP/Amount if no GP% field.
+  let gpPct = 0;
+  if (gpPctField > 0) {
+    gpPct = gpPctField <= 1 ? parseFloat((gpPctField * 100).toFixed(2)) : parseFloat(gpPctField.toFixed(2));
+  } else if (amt > 0 && gpRaw > 0) {
+    gpPct = parseFloat((gpRaw / amt * 100).toFixed(2));
+  }
+  const code = (row['Project Code'] || '').trim() || syntheticCode(row);
+  // Normalise sign_date: convert YYYY/MM/DD → YYYY-MM-DD; send null if empty
+  const rawDate = (row['Sign Date'] || '').trim().replace(/\//g, '-');
+  const signDate = /^\d{4}-\d{2}-\d{2}/.test(rawDate) ? rawDate : null;
+
   return {
-    project_code: (row['Project Code'] || '').trim(),
-    client: (row['Client'] || '').trim(),
+    project_code: code,
+    client: client.trim(),
     project: (row['Project'] || '').trim(),
     status: (row['Status'] || '').trim(),
     amount: amt,
     gp: gpRaw,
     tribe: (row['Tribe'] || '').trim(),
-    year: (row['Year'] || '').trim(),
-    month: (row['Month'] || '').trim(),
+    year: (row['Year'] || '').trim() || null,
+    month: (row['Month'] || '').trim() || null,
     pct_collected: pct,
-    sign_date: (row['Sign Date'] || '').trim(),
-    // Only set forecast_pct on INSERT (new rows). For existing rows we use
-    // on-conflict to skip forecast_pct — handled in the upsert logic below.
+    sign_date: signDate,
+    // Only used for new INSERT rows — existing rows preserve their forecast_pct via PATCH logic
     forecast_pct: gpPct
   };
 }
@@ -786,20 +893,33 @@ async function runImport() {
 
     for (const row of rows) {
       const rec = csvRowToSupabase(row);
-      if (!rec.project_code) { skipped++; continue; }
+      // Skip completely blank rows (no client, no project, no tribe)
+      if (!rec.client && !rec.project && !rec.tribe) { skipped++; continue; }
 
       if (existingMap[rec.project_code] !== undefined) {
         // EXISTING — update everything EXCEPT forecast_pct
+        // Also never overwrite a non-empty DB field with a blank CSV value
         const { forecast_pct, ...updateFields } = rec;
+        // Fields where 0 is a valid real value (pct_collected can be 0)
+        const allowZero = new Set(['pct_collected']);
+        const patchFields = Object.fromEntries(
+          Object.entries(updateFields).filter(([k, v]) => {
+            if (v === null || v === undefined) return false;
+            if (typeof v === 'string') return v.trim() !== '';
+            if (typeof v === 'number') return allowZero.has(k) || v !== 0;
+            return false;
+          })
+        );
         try {
           await supaFetch(`/rest/v1/tribe_wins?project_code=eq.${encodeURIComponent(rec.project_code)}`, {
             method: 'PATCH',
-            body: JSON.stringify(updateFields)
+            body: JSON.stringify(patchFields)
           });
-          logLine(`↻ Updated: ${rec.project_code} — ${rec.project.slice(0,40)}`, 'ok');
+          const updDisplay = rec.project_code.startsWith('GEN-') ? '(no code)' : rec.project_code;
+          logLine(`↻ Updated: ${updDisplay} — ${(rec.project || rec.client).slice(0,40)}`, 'ok');
           updated++;
         } catch(e) {
-          logLine(`✗ Failed update: ${rec.project_code}`, 'err');
+          logLine(`✗ Failed update: ${rec.project_code} — ${e.message}`, 'err');
         }
       } else {
         // NEW — insert with default forecast_pct
@@ -809,10 +929,12 @@ async function runImport() {
             headers: { 'Prefer': 'return=minimal' },
             body: JSON.stringify(rec)
           });
-          logLine(`+ Added: ${rec.project_code} — ${rec.project.slice(0,40)}`, 'ok');
+          const codeDisplay = rec.project_code.startsWith('GEN-') ? '(no code)' : rec.project_code;
+          logLine(`+ Added: ${codeDisplay} — ${(rec.project || rec.client).slice(0,40)}`, 'ok');
           inserted++;
         } catch(e) {
-          logLine(`✗ Failed insert: ${rec.project_code}`, 'err');
+          const codeDisplay = rec.project_code.startsWith('GEN-') ? '(no code)' : rec.project_code;
+          logLine(`✗ Failed insert: ${codeDisplay} — ${(rec.project || rec.client).slice(0,30)} | ${e.message}`, 'err');
         }
       }
     }
