@@ -377,13 +377,8 @@ tbody td.num{text-align:right;font-family:'DM Mono',monospace}
 <!-- TOASTS -->
 <div class="toast-container" id="toasts"></div>
 
+<script src="config.js"></script>
 <script>
-// ─── CONFIG — replace these two values ───────────────────────────────────────
-const SUPABASE_URL = 'https://usyngchiqsobonfqskkm.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzeW5nY2hpcXNvYm9uZnFza2ttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MTE4MDAsImV4cCI6MjA5MzE4NzgwMH0.gFFinSbb4Ye1966EcBxDu_FH9UBF-PC3XG4v_AJcg98';
-// The password that gates CSV import
-const IMPORT_PASSWORD = 'Mineski2019$@#';
-// ─────────────────────────────────────────────────────────────────────────────
 
 const TRIBE_KEY = t => t === 'IP' ? 'ip' : t.replace('PDEI - ','').toLowerCase();
 const MONTH_LABELS = {
