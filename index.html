@@ -449,6 +449,7 @@ function mapRow(r) {
     tribe: r.tribe || '', year: r.year || '', month: r.month || '',
     pctCollected: r.pct_collected || 0,
     forecastPct: r.forecast_pct || 0,
+    leadDate: r.lead_date || '',
     _modified: false
   };
 }
@@ -493,6 +494,7 @@ function getFiltered() {
   const q = document.getElementById('search').value.toLowerCase();
   return data.filter(d => {
     if (d.year && d.year !== '2026') return false;
+    if (d.status === 'Talks In Progress') return false;
     const mf =
       activeFilter === 'all' ? true :
       activeFilter === 'ESPORTS_IP' ? (d.tribe === 'PDEI - Esports' || d.tribe === 'IP') :
@@ -608,7 +610,10 @@ function renderTable() {
       if (chevron) chevron.style.transform = collapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
     });
     tbody.appendChild(mTr);
-    rows.forEach((row, i) => {
+    const sortedRows = mo === ''
+      ? [...rows].sort((a, b) => (b.leadDate || '').localeCompare(a.leadDate || ''))
+      : rows;
+    sortedRows.forEach((row, i) => {
       const key = TRIBE_KEY(row.tribe);
       const pct = Math.round((row.pctCollected || 0) * 100);
       const forecastVal = row.amount * row.forecastPct / 100;
@@ -833,9 +838,11 @@ function csvRowToSupabase(row) {
     gpPct = parseFloat((gpRaw / amt * 100).toFixed(2));
   }
   const code = (row['Project Code'] || '').trim() || syntheticCode(row);
-  // Normalise sign_date: convert YYYY/MM/DD → YYYY-MM-DD; send null if empty
+  // Normalise sign_date and lead_date: convert YYYY/MM/DD → YYYY-MM-DD; send null if empty
   const rawDate = (row['Sign Date'] || '').trim().replace(/\//g, '-');
   const signDate = /^\d{4}-\d{2}-\d{2}/.test(rawDate) ? rawDate : null;
+  const rawLeadDate = (row['Lead Date'] || '').trim().replace(/\//g, '-');
+  const leadDate = /^\d{4}-\d{2}-\d{2}/.test(rawLeadDate) ? rawLeadDate : null;
 
   return {
     project_code: code,
@@ -849,6 +856,7 @@ function csvRowToSupabase(row) {
     month: (row['Month'] || '').trim() || null,
     pct_collected: pct,
     sign_date: signDate,
+    lead_date: leadDate,
     // Only used for new INSERT rows — existing rows preserve their forecast_pct via PATCH logic
     forecast_pct: gpPct
   };
