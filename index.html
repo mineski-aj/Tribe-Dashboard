@@ -449,7 +449,6 @@ function mapRow(r) {
     tribe: r.tribe || '', year: r.year || '', month: r.month || '',
     pctCollected: r.pct_collected || 0,
     forecastPct: r.forecast_pct || 0,
-    leadDate: r.lead_date || '',
     _modified: false
   };
 }
@@ -841,9 +840,6 @@ function csvRowToSupabase(row) {
   // Normalise sign_date and lead_date: convert YYYY/MM/DD → YYYY-MM-DD; send null if empty
   const rawDate = (row['Sign Date'] || '').trim().replace(/\//g, '-');
   const signDate = /^\d{4}-\d{2}-\d{2}/.test(rawDate) ? rawDate : null;
-  const rawLeadDate = (row['Lead Date'] || '').trim().replace(/\//g, '-');
-  const leadDate = /^\d{4}-\d{2}-\d{2}/.test(rawLeadDate) ? rawLeadDate : null;
-
   return {
     project_code: code,
     client: client.trim(),
@@ -856,7 +852,6 @@ function csvRowToSupabase(row) {
     month: (row['Month'] || '').trim() || null,
     pct_collected: pct,
     sign_date: signDate,
-    lead_date: leadDate,
     // Only used for new INSERT rows — existing rows preserve their forecast_pct via PATCH logic
     forecast_pct: gpPct
   };
